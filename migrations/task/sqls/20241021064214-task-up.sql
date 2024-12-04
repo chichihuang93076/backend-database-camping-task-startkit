@@ -48,7 +48,6 @@ select * FROM "USER" LIMIT 3;
 INSERT INTO "CREDIT_PACKAGE" (name, credit_amount, price) VALUES ('7 堂組合包方案', 7, 1400);
 INSERT INTO "CREDIT_PACKAGE" (name, credit_amount, price) VALUES ('14 堂組合包方案', 14, 2520);
 INSERT INTO "CREDIT_PACKAGE" (name, credit_amount, price) VALUES ('21 堂組合包方案', 21, 4800);
-
 -- 2-2. 新增：在 `CREDIT_PURCHASE` 資料表，新增三筆資料：（請使用 name 欄位做子查詢）
     -- 1. `王小明` 購買 `14 堂組合包方案`
     -- 2. `王小明` 購買 `21 堂組合包方案`
@@ -71,8 +70,6 @@ VALUES ((select id from "USER" where name ='好野人'),
 (select credit_amount from "CREDIT_PACKAGE" where name ='14 堂組合包方案'),
 (select price  from "CREDIT_PACKAGE" where name ='14 堂組合包方案')
 );
-
-
 -- ████████  █████   █    ████   
 --   █ █   ██    █  █         ██ 
 --   █ █████ ███ ███       ███   
@@ -90,33 +87,26 @@ INSERT into "COACH" (user_id, experience_years)
 values ((select id from "USER" where email ='muscle@hexschooltest.io'),2);
 INSERT into "COACH" (user_id, experience_years)
 values ((select id from "USER" where email ='starplatinum@hexschooltest.io'),2);
-
-
 -- 3-2. 新增：承1，為三名教練新增專長資料至 `COACH_LINK_SKILL` ，資料需求如下：
     -- 1. 所有教練都有 `重訓` 專長
     -- 2. 教練`肌肉棒子` 需要有 `瑜伽` 專長
     -- 3. 教練`Q太郎` 需要有 `有氧運動` 與 `復健訓練` 專長
 insert into "COACH_LINK_SKILL" (coach_id,skill_id)
 select id, (select id from "SKILL" where name ='重訓') from "COACH";
-
 insert into "COACH_LINK_SKILL" (coach_id,skill_id)
 values (
 (select id from "COACH" where user_id = (select id from "USER" where email = 'muscle@hexschooltest.io')),
 (select id from "SKILL" where name ='瑜伽'));
-
 insert into "COACH_LINK_SKILL" (coach_id,skill_id)
 (select (select id from "COACH" where user_id = (select id from "USER" where email = 'starplatinum@hexschooltest.io')), id 
 from "SKILL" where (name ='有氧運動' or name ='復健訓練'));
-
 -- 3-3 修改：更新教練的經驗年數，資料需求如下：
     -- 1. 教練`肌肉棒子` 的經驗年數為3年
     -- 2. 教練`Q太郎` 的經驗年數為5年
 update "COACH" set experience_years =3
 where user_id = (select id from "USER" where email = 'muscle@hexschooltest.io');
-
 update "COACH" set experience_years =5
 where user_id = (select id from "USER" where email = 'starplatinum@hexschooltest.io');
-
 -- 3-4 刪除：新增一個專長 空中瑜伽 至 SKILL 資料表，之後刪除此專長。
 insert into "SKILL" (name) values ('空中瑜伽');
 delete from "SKILL" where name='空中瑜伽';
@@ -142,7 +132,7 @@ values (
 (select id from  "USER" where name='李燕容'),
 (select id from "SKILL" where name ='重訓'),
 '重訓基礎課','2024-11-25 14:00:00','2024-11-25 16:00:00',10,'https://test-meeting.test.io'
-)
+);
 
 -- ████████  █████   █    █████ 
 --   █ █   ██    █  █     █     
@@ -162,7 +152,6 @@ values (
 (select id from "USER" where name='王小明'),
 (select id from "COURSE" where user_id = (select id from "USER" where name='李燕容')),
 '2024-11-24 16:00:00', '即將授課');
-
     -- 2. 新增： `好野人` 預約 `李燕容` 的課程
         -- 1. 預約人設為 `好野人`
         -- 2. 預約時間`booking_at` 設為2024-11-24 16:00:00
@@ -172,7 +161,6 @@ values (
 (select id from "USER" where name='好野人'),
 (select id from "COURSE" where user_id = (select id from "USER" where name='李燕容')),
 '2024-11-24 16:00:00', '即將授課');
-
 -- 5-2. 修改：`王小明`取消預約 `李燕容` 的課程，請在`COURSE_BOOKING`更新該筆預約資料：
     -- 1. 取消預約時間`cancelled_at` 設為2024-11-24 17:00:00
     -- 2. 狀態`status` 設定為課程已取消
@@ -180,7 +168,6 @@ update "COURSE_BOOKING" set status='課程已取消', cancelled_at ='2024-11-24 
 where user_id =(select id from "USER" where name='王小明')
 and  course_id = (select id from "COURSE" where user_id = (select id from "USER" where name='李燕容'))
 and status ='即將授課';
-
 -- 5-3. 新增：`王小明`再次預約 `李燕容`   的課程，請在`COURSE_BOOKING`新增一筆資料：
     -- 1. 預約人設為`王小明`
     -- 2. 預約時間`booking_at` 設為2024-11-24 17:10:25
@@ -198,15 +185,12 @@ select * from "COURSE_BOOKING" where user_id =((select id from "USER" where name
 update "COURSE_BOOKING" set status ='上課中', join_at='2024-11-25 14:01:59'
 where user_id =((select id from "USER" where name='王小明'))
 and status <>'課程已取消';
-
 -- 5-6. 查詢：計算用戶王小明的購買堂數，顯示須包含以下欄位： user_id , total。 (需使用到 SUM 函式與 Group By)
-
 select "CREDIT_PURCHASE".user_id ,sum("CREDIT_PURCHASE".purchased_credits ) as total
 from "CREDIT_PURCHASE"
 inner JOIN "USER" on "USER".id = "CREDIT_PURCHASE".user_id 
 where "USER"."name" = '王小明'
 group by "CREDIT_PURCHASE".user_id;
-
 -- 5-7. 查詢：計算用戶王小明的已使用堂數，顯示須包含以下欄位： user_id , total。 (需使用到 Count 函式與 Group By)
 select "COURSE_BOOKING".user_id ,count(*) as total
 from "COURSE_BOOKING"
@@ -214,7 +198,6 @@ inner JOIN "USER" on "USER".id = "COURSE_BOOKING".user_id
      and "USER".name = '王小明'
 where  "COURSE_BOOKING".status <>'課程已取消'
 group by "COURSE_BOOKING".user_id;
-
 -- 5-8. [挑戰題] 查詢：請在一次查詢中，計算用戶王小明的剩餘可用堂數，顯示須包含以下欄位： user_id , remaining_credit
     -- 提示：
     -- select ("CREDIT_PURCHASE".total_credit - "COURSE_BOOKING".used_credit) as remaining_credit, ...
@@ -230,7 +213,6 @@ from "CREDIT_PURCHASE"
 inner JOIN "USER" on "USER".id = "CREDIT_PURCHASE".user_id 
 where "USER"."name" = '王小明'
 group by "CREDIT_PURCHASE".user_id;
-
 -- ████████  █████   █     ███  
 --   █ █   ██    █  █     █     
 --   █ █████ ███ ███      ████  
@@ -240,7 +222,6 @@ group by "CREDIT_PURCHASE".user_id;
 -- 6. 後台報表
 -- 6-1 查詢：查詢專長為重訓的教練，並按經驗年數排序，由資深到資淺（需使用 inner join 與 order by 語法)
 -- 顯示須包含以下欄位： 教練名稱 , 經驗年數, 專長名稱
-
 select "USER".name, "COACH".experience_years , "SKILL".name
 from "COACH"
 join "USER"  ON "COACH".user_id = "USER".id
@@ -248,10 +229,8 @@ join "COACH_LINK_SKILL" on "COACH".id  = "COACH_LINK_SKILL".coach_id
 join "SKILL" ON "COACH_LINK_SKILL".skill_id = "SKILL".id 
 and "SKILL".name = '重訓'
 order by "COACH".experience_years desc;
-
 -- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 group by, inner join 與 order by 與 limit 語法）
 -- 顯示須包含以下欄位： 專長名稱, coach_total
-
 select "SKILL".name , count("COACH".id) as coach_total
 from "COACH"
 join "COACH_LINK_SKILL" on "COACH".id  = "COACH_LINK_SKILL".coach_id 
@@ -259,28 +238,22 @@ join "SKILL" ON "COACH_LINK_SKILL".skill_id = "SKILL".id
 group by "SKILL".name
 order by count("COACH".id) desc
 limit 1;
-
 -- 6-3. 查詢：計算 11 月份組合包方案的銷售數量
 -- 顯示須包含以下欄位： 組合包方案名稱, 銷售數量
-
 select "CREDIT_PACKAGE".name, count(*)
 from "CREDIT_PURCHASE"
 join "CREDIT_PACKAGE" on "CREDIT_PURCHASE".credit_package_id = "CREDIT_PACKAGE".id 
 where "CREDIT_PURCHASE".purchase_at >='2024-11-01 00:00:00'
 and "CREDIT_PURCHASE".purchase_at <='2024-11-30 23:59:59'
 group by "CREDIT_PACKAGE".name;
-
 -- 6-4. 查詢：計算 11 月份總營收（使用 purchase_at 欄位統計）
 -- 顯示須包含以下欄位： 總營收
-
 select sum("CREDIT_PURCHASE".price_paid)
 from "CREDIT_PURCHASE" 
 where "CREDIT_PURCHASE".purchase_at >='2024-11-01 00:00:00'
 and "CREDIT_PURCHASE".purchase_at <='2024-11-30 23:59:59';
-
 -- 6-5. 查詢：計算 11 月份有預約課程的會員人數（需使用 Distinct，並用 created_at 和 status 欄位統計）
 -- 顯示須包含以下欄位： 預約會員人數
-
 select count(distinct user_id ) as "預約會員人數"
 from "COURSE_BOOKING"
 where "COURSE_BOOKING".created_at >='2024-11-01 00:00:00'
